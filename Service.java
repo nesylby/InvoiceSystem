@@ -1,109 +1,112 @@
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Service {
-    private int id;
-    private String name;
-    private double rate;
 
-    public Service(int id, String name, double rate) {
-        this.id = id;
-        this.name = name;
-        this.rate = rate;
-    }
+    static HashMap<String, ArrayList<Double>> services = new HashMap<>();
 
-    // Getters and Setters
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
 
-    public int getId() {
-        return id;
-    }
+        while (true) {
+            System.out.println("\n=== Service Management System ===");
+            System.out.println("1. Add Service");
+            System.out.println("2. View Services");
+            System.out.println("3. Update Service");
+            System.out.println("4. Delete Service");
+            System.out.println("5. View Total Hours Billed for a Service");
+            System.out.println("6. Exit");
 
-    public void setId(int id) {
-        this.id = id;
-    }
+            System.out.print("Enter your choice (1-6): ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();  // Consume newline character
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public double getRate() {
-        return rate;
-    }
-
-    public void setRate(double rate) {
-        this.rate = rate;
-    }
-
-    // CRUD Operations
-
-    // Create a new service
-    public void addService() {
-        try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO services (service_name, service_rate) VALUES (?, ?)")) {
-            preparedStatement.setString(1, name);
-            preparedStatement.setDouble(2, rate);
-            preparedStatement.executeUpdate();
-            System.out.println("Service added successfully.");
-        } catch (SQLException e) {
-            e.printStackTrace();
+            switch (choice) {
+                case 1:
+                    addService(scanner);
+                    break;
+                case 2:
+                    viewServices();
+                    break;
+                case 3:
+                    updateService(scanner);
+                    break;
+                case 4:
+                    deleteService(scanner);
+                    break;
+                case 5:
+                    viewTotalHoursBilled(scanner);
+                    break;
+                case 6:
+                    System.out.println("Exiting Program. Goodbye!");
+                    scanner.close();
+                    System.exit(0);
+                default:
+                    System.out.println("Invalid choice. Please enter a number from 1 to 6.");
+            }
         }
     }
 
-    // View all services
-    public static List<Service> getAllServices() {
-        List<Service> services = new ArrayList<>();
-        try (Connection connection = DatabaseManager.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT * FROM services")) {
+    public static void addService(Scanner scanner) {
+        System.out.print("Enter service name: ");
+        String name = scanner.nextLine();
 
-            while (resultSet.next()) {
-                int id = resultSet.getInt("service_id");
-                String name = resultSet.getString("service_name");
-                double rate = resultSet.getDouble("service_rate");
-                services.add(new Service(id, name, rate));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return services;
+        System.out.print("Enter total hours billed for this service: ");
+        double totalHours = scanner.nextDouble();
+
+        ArrayList<Double> details = new ArrayList<>();
+        details.add(totalHours);
+
+        services.put(name, details);
+        System.out.println("Service added successfully!");
     }
 
-    // Update service information
-    public void updateService() {
-        try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE services SET service_name = ?, service_rate = ? WHERE service_id = ?")) {
-            preparedStatement.setString(1, name);
-            preparedStatement.setDouble(2, rate);
-            preparedStatement.setInt(3, id);
-            int rowsAffected = preparedStatement.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println("Service updated successfully.");
-            } else {
-                System.out.println("Service with ID " + id + " not found.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public static void viewServices() {
+        System.out.println("\nList of Services:");
+        for (Map.Entry<String, ArrayList<Double>> entry : services.entrySet()) {
+            String name = entry.getKey();
+            ArrayList<Double> details = entry.getValue();
+            System.out.println("Service: " + name + ", Total Hours Billed: " + details.get(0));
         }
     }
 
-    // Delete a service
-    public void deleteService() {
-        try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM services WHERE service_id = ?")) {
-            preparedStatement.setInt(1, id);
-            int rowsAffected = preparedStatement.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println("Service deleted successfully.");
-            } else {
-                System.out.println("Service with ID " + id + " not found.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public static void updateService(Scanner scanner) {
+        System.out.print("Enter service name to update: ");
+        String name = scanner.nextLine();
+
+        if (services.containsKey(name)) {
+            System.out.print("Enter new total hours billed: ");
+            double newTotalHours = scanner.nextDouble();
+
+            ArrayList<Double> details = services.get(name);
+            details.set(0, newTotalHours);
+
+            System.out.println("Service updated successfully!");
+        } else {
+            System.out.println("Service not found.");
+        }
+    }
+
+    public static void deleteService(Scanner scanner) {
+        System.out.print("Enter service name to delete: ");
+        String name = scanner.nextLine();
+
+        if (services.containsKey(name)) {
+            services.remove(name);
+            System.out.println("Service deleted successfully!");
+        } else {
+            System.out.println("Service not found.");
+        }
+    }
+
+    public static void viewTotalHoursBilled(Scanner scanner) {
+        System.out.print("Enter service name to view total hours billed: ");
+        String name = scanner.nextLine();
+
+        if (services.containsKey(name)) {
+            ArrayList<Double> details = services.get(name);
+            System.out.println("Total Hours Billed for " + name + ": " + details.get(0));
+        } else {
+            System.out.println("Service not found.");
         }
     }
 }

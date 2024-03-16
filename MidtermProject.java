@@ -3,62 +3,85 @@ import java.util.Scanner;
 public class MidtermProject {
 
     public static void main(String[] args) {
-        MidtermProject project = new MidtermProject();
-        project.startSimulation();
-    }
-
-    private void startSimulation() {
         Scanner scanner = new Scanner(System.in);
-        int choice;
 
-        do {
-            System.out.println("===== Invoice System Menu =====");
-            System.out.println("1. Manage Clients");
-            System.out.println("2. Manage Services");
-            System.out.println("3. Manage Invoices");
+        while (true) {
+            System.out.println("\n=== Midterm Project: Invoice Management System ===");
+            System.out.println("1. Client Management");
+            System.out.println("2. Service Management");
+            System.out.println("3. Invoice Management");
             System.out.println("4. Analytics");
             System.out.println("5. Exit");
-            System.out.print("Enter your choice: ");
-            choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+
+            System.out.print("Enter your choice (1-5): ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();  // Consume newline character
 
             switch (choice) {
                 case 1:
-                    manageClientsMenu();
+                    clientManagementMenu(scanner);
                     break;
                 case 2:
-                    manageServicesMenu();
+                    serviceManagementMenu(scanner);
                     break;
                 case 3:
-                    manageInvoicesMenu();
+                    invoiceManagementMenu(scanner);
                     break;
                 case 4:
-                    analyticsMenu();
+                    analyticsMenu(scanner);
                     break;
                 case 5:
-                    System.out.println("Exiting the Invoice System. Goodbye!");
-                    break;
+                    System.out.println("Exiting Midterm Project. Goodbye!");
+                    scanner.close();
+                    System.exit(0);
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    System.out.println("Invalid choice. Please enter a number from 1 to 5.");
             }
-        } while (choice != 5);
-
-        scanner.close();
+        }
     }
 
-    private void manageClientsMenu() {
-        // Implement client management options
+    public static void clientManagementMenu(Scanner scanner) {
+        // Implement client management menu if needed
+        System.out.println("Client Management Menu - Feature not implemented yet.");
     }
 
-    private void manageServicesMenu() {
-        // Implement service management options
+    public static void serviceManagementMenu(Scanner scanner) {
+        // Implement service management menu if needed
+        System.out.println("Service Management Menu - Feature not implemented yet.");
     }
 
-    private void manageInvoicesMenu() {
-        // Implement invoice management options
+    public static void invoiceManagementMenu(Scanner scanner) {
+        // Implement invoice management menu if needed
+        System.out.println("Invoice Management Menu - Feature not implemented yet.");
     }
 
-    private void analyticsMenu() {
-        // Implement analytics options
+    public static void analyticsMenu(Scanner scanner) {
+        while (true) {
+            System.out.println("\n=== Analytics Menu ===");
+            System.out.println("1. Total Income for a Given Period");
+            System.out.println("2. Most Popular Service for a Given Period");
+            System.out.println("3. Top Client for a Given Period");
+            System.out.println("4. Back to Main Menu");
+
+            System.out.print("Enter your choice (1-4): ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();  // Consume newline character
+
+            switch (choice) {
+                case 1:
+                    Analytics.totalIncomeForPeriod(scanner);
+                    break;
+                case 2:
+                    Analytics.mostPopularServiceForPeriod(scanner);
+                    break;
+                case 3:
+                    Analytics.topClientForPeriod(scanner);
+                    break;
+                case 4:
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please enter a number from 1 to 4.");
+            }
+        }
     }
 }
