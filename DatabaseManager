@@ -1,0 +1,108 @@
+import java.sql.*;
+
+public class DatabaseManager {
+    private Connection connection;
+
+    public DatabaseManager() {
+        try {
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/invoicesys", "your_username", "your_password");
+            System.out.println("Connected to database successfully!");
+        } catch (SQLException e) {
+            System.err.println("Error connecting to database: " + e.getMessage());
+        }
+    }
+
+    public void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                System.out.println("Connection closed.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error closing database connection: " + e.getMessage());
+        }
+    }
+
+    // Methods to perform CRUD operations for clients
+
+    public void addClient(Client client) {
+        String query = "INSERT INTO clients (client_name, contact_information, billing_address, total_amount_billed) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setString(1, client.getClientName());
+            pstmt.setString(2, client.getContactInformation());
+            pstmt.setString(3, client.getBillingAddress());
+            pstmt.setDouble(4, client.getTotalAmountBilled());
+            
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Creating client failed, no rows affected.");
+            }
+            
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int clientId = generatedKeys.getInt(1);
+                    client.setClientId(clientId);
+                } else {
+                    throw new SQLException("Creating client failed, no ID obtained.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error adding client: " + e.getMessage());
+        }
+    }
+
+    public void updateClient(Client client) {
+        String query = "UPDATE clients SET client_name = ?, contact_information = ?, billing_address = ?, total_amount_billed = ? WHERE client_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, client.getClientName());
+            pstmt.setString(2, client.getContactInformation());
+            pstmt.setString(3, client.getBillingAddress());
+            pstmt.setDouble(4, client.getTotalAmountBilled());
+            pstmt.setInt(5, client.getClientId());
+            
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Updating client failed, no rows affected.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error updating client: " + e.getMessage());
+        }
+    }
+
+    public void deleteClient(int clientId) {
+        String query = "DELETE FROM clients WHERE client_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, clientId);
+            
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Deleting client failed, no rows affected.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error deleting client: " + e.getMessage());
+        }
+    }
+
+    public Client getClientById(int clientId) {
+        String query = "SELECT * FROM clients WHERE client_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, clientId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String clientName = rs.getString("client_name");
+                    String contactInformation = rs.getString("contact_information");
+                    String billingAddress = rs.getString("billing_address");
+                    double totalAmountBilled = rs.getDouble("total_amount_billed");
+                    
+                    return new Client(clientId, clientName, contactInformation, billingAddress, totalAmountBilled);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting client by ID: " + e.getMessage());
+        }
+        return null;
+    }
+
+    // Similar methods for services, invoices, and invoice items can be added here
+}

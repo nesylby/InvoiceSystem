@@ -1,0 +1,66 @@
+public class InvoiceItem {
+    private int invoiceItemId;
+    private int invoiceId;
+    private int serviceId;
+    private double hoursWorked;
+    private double subtotal;
+
+    public InvoiceItem(int invoiceItemId, int invoiceId, int serviceId, double hoursWorked, double subtotal) {
+        this.invoiceItemId = invoiceItemId;
+        this.invoiceId = invoiceId;
+        this.serviceId = serviceId;
+        this.hoursWorked = hoursWorked;
+        this.subtotal = subtotal;
+    }
+
+    public int getInvoiceItemId() {
+        return invoiceItemId;
+    }
+
+    public void setInvoiceItemId(int invoiceItemId) {
+        this.invoiceItemId = invoiceItemId;
+    }
+
+    public int getInvoiceId() {
+        return invoiceId;
+    }
+
+    public void setInvoiceId(int invoiceId) {
+        this.invoiceId = invoiceId;
+    }
+
+    public int getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(int serviceId) {
+        this.serviceId = serviceId;
+    }
+
+    public double getHoursWorked() {
+        return hoursWorked;
+    }
+
+    public void setHoursWorked(double hoursWorked) {
+        this.hoursWorked = hoursWorked;
+    }
+
+    public double getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(double subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    @Override
+    public String toString() {
+        return "InvoiceItem{" +
+                "invoiceItemId=" + invoiceItemId +
+                ", invoiceId=" + invoiceId +
+                ", serviceId=" + serviceId +
+                ", hoursWorked=" + hoursWorked +
+                ", subtotal=" + subtotal +
+                '}';
+    }
+}

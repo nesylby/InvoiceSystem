@@ -1,13 +1,15 @@
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Analytics {
 
-    static HashMap<String, ArrayList<Invoice>> invoicesByClient = new HashMap<>();
-    static int invoiceIdCounter = 1;
+    static Connection connection;
 
     public static void main(String[] args) {
+        connectToDatabase();
+
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -54,6 +56,7 @@ public class Analytics {
                 case 9:
                     System.out.println("Exiting Program. Goodbye!");
                     scanner.close();
+                    closeDatabaseConnection();
                     System.exit(0);
                 default:
                     System.out.println("Invalid choice. Please enter a number from 1 to 9.");
@@ -61,34 +64,47 @@ public class Analytics {
         }
     }
 
+    public static void connectToDatabase() {
+        try {
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/invoicesys", "your_username", "your_password");
+            System.out.println("Connected to database successfully!");
+        } catch (SQLException e) {
+            System.err.println("Error connecting to database: " + e.getMessage());
+        }
+    }
+
+    public static void closeDatabaseConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                System.out.println("Connection closed.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error closing database connection: " + e.getMessage());
+        }
+    }
+
     public static void createInvoice(Scanner scanner) {
         System.out.print("Enter client name: ");
         String clientName = scanner.nextLine();
 
-        ArrayList<Invoice> invoices = invoicesByClient.getOrDefault(clientName, new ArrayList<>());
-
-        Invoice newInvoice = new Invoice(invoiceIdCounter++, clientName);
-        invoices.add(newInvoice);
-
-        invoicesByClient.put(clientName, invoices);
-
-        System.out.println("Invoice created successfully with ID: " + newInvoice.getInvoiceId());
+        // Your database insert logic for creating a new invoice
     }
 
     public static void addServiceToInvoice(Scanner scanner) {
-        // Code for adding service to invoice (same as before)
+        // Your database insert logic for adding service to an invoice
     }
 
     public static void updateServiceHoursInInvoice(Scanner scanner) {
-        // Code for updating service hours in invoice (same as before)
+        // Your database update logic for updating service hours in an invoice
     }
 
     public static void deleteInvoice(Scanner scanner) {
-        // Code for deleting invoice (same as before)
+        // Your database delete logic for deleting an invoice
     }
 
     public static void viewInvoicesForClient(Scanner scanner) {
-        // Code for viewing invoices for client (same as before)
+        // Your database query logic for viewing invoices for a client
     }
 
     public static void totalIncomeForPeriod(Scanner scanner) {
@@ -100,73 +116,29 @@ public class Analytics {
 
         double totalIncome = 0.0;
 
-        for (ArrayList<Invoice> invoices : invoicesByClient.values()) {
-            for (Invoice invoice : invoices) {
-                if (invoice.isInPeriod(startDateStr, endDateStr)) {
-                    totalIncome += invoice.getTotalAmount();
-                }
-            }
-        }
+        try {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM invoices WHERE date BETWEEN ? AND ?");
+            statement.setString(1, startDateStr);
+            statement.setString(2, endDateStr);
+            ResultSet resultSet = statement.executeQuery();
 
-        System.out.println("Total Income for the Period: $" + totalIncome);
+            while (resultSet.next()) {
+                totalIncome += resultSet.getDouble("total_amount");
+            }
+
+            System.out.println("Total Income for the Period: $" + totalIncome);
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving total income: " + e.getMessage());
+        }
     }
 
     public static void mostPopularServiceForPeriod(Scanner scanner) {
-        System.out.print("Enter start date (MM/DD/YYYY): ");
-        String startDateStr = scanner.nextLine();
-
-        System.out.print("Enter end date (MM/DD/YYYY): ");
-        String endDateStr = scanner.nextLine();
-
-        HashMap<String, Integer> serviceCount = new HashMap<>();
-
-        for (ArrayList<Invoice> invoices : invoicesByClient.values()) {
-            for (Invoice invoice : invoices) {
-                if (invoice.isInPeriod(startDateStr, endDateStr)) {
-                    for (Map.Entry<String, Double> entry : invoice.getServices().entrySet()) {
-                        String serviceName = entry.getKey();
-                        serviceCount.put(serviceName, serviceCount.getOrDefault(serviceName, 0) + 1);
-                    }
-                }
-            }
-        }
-
-        if (serviceCount.isEmpty()) {
-            System.out.println("No services found for the period.");
-            return;
-        }
-
-        String mostPopularService = Collections.max(serviceCount.entrySet(), Map.Entry.comparingByValue()).getKey();
-        System.out.println("Most Popular Service for the Period: " + mostPopularService);
+        // Your database query logic for finding the most popular service for a period
     }
 
     public static void topClientForPeriod(Scanner scanner) {
-        System.out.print("Enter start date (MM/DD/YYYY): ");
-        String startDateStr = scanner.nextLine();
-
-        System.out.print("Enter end date (MM/DD/YYYY): ");
-        String endDateStr = scanner.nextLine();
-
-        HashMap<String, Double> clientTotalAmount = new HashMap<>();
-
-        for (String clientName : invoicesByClient.keySet()) {
-            double totalAmount = 0.0;
-            for (Invoice invoice : invoicesByClient.get(clientName)) {
-                if (invoice.isInPeriod(startDateStr, endDateStr)) {
-                    totalAmount += invoice.getTotalAmount();
-                }
-            }
-            clientTotalAmount.put(clientName, totalAmount);
-        }
-
-        if (clientTotalAmount.isEmpty()) {
-            System.out.println("No clients found for the period.");
-            return;
-        }
-
-        String topClient = Collections.max(clientTotalAmount.entrySet(), Map.Entry.comparingByValue()).getKey();
-        double topClientAmount = clientTotalAmount.get(topClient);
-        System.out.println("Top Client for the Period: " + topClient + " with Total Amount: $" + topClientAmount);
+        // Your database query logic for finding the top client for a period
     }
 
     public static Invoice findInvoiceById(ArrayList<Invoice> invoices, int invoiceId) {
@@ -204,46 +176,4 @@ public class Analytics {
                 System.out.println("Service not found in invoice.");
             }
         }
-
-        public void displayServices() {
-            System.out.println("Services in Invoice " + invoiceId + ":");
-            for (Map.Entry<String, Double> entry : services.entrySet()) {
-                System.out.println("Service: " + entry.getKey() + ", Hours: " + entry.getValue());
-            }
-        }
-
-        public double getTotalAmount() {
-            double total = 0.0;
-            for (Double hours : services.values()) {
-                total += hours * 50; // Assuming $50 per hour
-            }
-            return total;
-        }
-
-        public boolean isInPeriod(String startDateStr, String endDateStr) {
-            // Parsing dates for comparison
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-            try {
-                Date startDate = sdf.parse(startDateStr);
-                Date endDate = sdf.parse(endDateStr);
-
-                // Checking if invoice date falls within the given period
-                return !(endDate.before(getInvoiceDate()) || startDate.after(getInvoiceDate()));
-
-            } catch (ParseException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-
-        private Date getInvoiceDate() {
-            // Here you would implement a method to get the invoice date.
-            // For the sake of this example, we'll just return the current date.
-            return new Date();
-        }
-
-        public HashMap<String, Double> getServices() {
-            return services;
-        }
     }
-}
